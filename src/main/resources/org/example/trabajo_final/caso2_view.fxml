@@ -11,18 +11,20 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.trabajo_final.PedidosController"
       prefWidth="660.0"
       prefHeight="540.0"
       spacing="24.0"
-      style="-fx-background-color: #f1f5f9; -fx-font-family: 'Segoe UI';">
+      style="-fx-background-color: #f1f5f9;
+             -fx-font-family: 'Segoe UI';">
 
     <padding>
-        <Insets top="32.0" right="32.0" bottom="32.0" left="32.0"/>
+        <Insets top="32.0" right="32.0"
+                bottom="32.0" left="32.0"/>
     </padding>
 
     <children>
 
-        <!-- Encabezado -->
         <VBox spacing="8.0">
             <children>
                 <Label text="GESTIÓN DE PEDIDOS"
@@ -43,7 +45,6 @@
             </children>
         </VBox>
 
-        <!-- Tarjeta principal -->
         <VBox spacing="24.0"
               style="-fx-background-color: white;
                      -fx-background-radius: 16;
@@ -51,12 +52,12 @@
                      -fx-border-radius: 16;">
 
             <padding>
-                <Insets top="28.0" right="28.0" bottom="28.0" left="28.0"/>
+                <Insets top="28.0" right="28.0"
+                        bottom="28.0" left="28.0"/>
             </padding>
 
             <children>
 
-                <!-- Estado -->
                 <VBox spacing="10.0">
                     <children>
                         <Label text="ESTADO ACTUAL"
@@ -77,10 +78,8 @@
 
                 <Separator/>
 
-                <!-- Progreso y contador -->
                 <VBox spacing="14.0">
                     <children>
-
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <children>
                                 <Label text="Progreso general"
@@ -117,16 +116,14 @@
                                maxWidth="Infinity"
                                style="-fx-text-fill: #64748b;
                                       -fx-font-size: 13px;"/>
-
                     </children>
                 </VBox>
 
-                <!-- Botones -->
                 <HBox alignment="CENTER_LEFT" spacing="12.0">
                     <children>
-
                         <Button fx:id="btnIniciar"
                                 text="Iniciar"
+                                onAction="#iniciar"
                                 prefWidth="135.0"
                                 prefHeight="44.0"
                                 mnemonicParsing="false"
@@ -139,6 +136,7 @@
 
                         <Button fx:id="btnCancelar"
                                 text="Cancelar"
+                                onAction="#cancelar"
                                 prefWidth="135.0"
                                 prefHeight="44.0"
                                 disable="true"
@@ -149,15 +147,13 @@
                                        -fx-font-weight: bold;
                                        -fx-background-radius: 8;
                                        -fx-cursor: hand;"/>
-
                     </children>
                 </HBox>
 
             </children>
         </VBox>
 
-        <!-- Pie -->
-        <Label text="30 pedidos • 200 ms por pedido • Ejecución en segundo plano"
+        <Label text="30 pedidos · 200 ms por pedido · Ejecución en segundo plano"
                wrapText="true"
                style="-fx-text-fill: #64748b;
                       -fx-font-size: 12px;"/>

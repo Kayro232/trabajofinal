@@ -1,43 +1,30 @@
 package org.example.trabajo_final;
 
-public class Agente {
+import javafx.concurrent.Task;
+import javafx.application.Platform;
 
-    public static final int TOTAL_ENTRADAS = 20;
-    private String nombre;
+public class Agente extends Task<Void> {
+    private final String nombre;
+    private final EventoController controlador;
+    private final Runnable callbackActualizacion;
 
-    public Agente(String nombre) {
+    public Agente(String nombre, EventoController controlador, Runnable callbackActualizacion) {
         this.nombre = nombre;
+        this.controlador = controlador;
+        this.callbackActualizacion = callbackActualizacion;
     }
 
-    // Metodo de validación
-    public static boolean verificarInventario(int entradasDisponibles, int reservasConfirmadas) {
-        if (entradasDisponibles < 0 || reservasConfirmadas < 0) {
-            System.out.println("Error: ¡Hay inventario negativo!");
-            return false;
+    @Override
+    protected Void call() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            // Intento de reserva directamente en el controlador
+            controlador.intentarReservar(nombre);
+            
+            // Actualización segura en UI
+            Platform.runLater(callbackActualizacion);
+
+            Thread.sleep((long) (Math.random() * 100 + 50));
         }
-
-        if (entradasDisponibles + reservasConfirmadas != TOTAL_ENTRADAS) {
-            System.out.println("Error: La suma no da 20.");
-            return false;
-        }
-
-        System.out.println("Todo correcto: El inventario es válido.");
-        return true;
-    }
-
-    // Simulación del comportamiento del agente al solicitar una entrada
-    public void intentarReserva(int entradasDisponibles, int reservasConfirmadas, int cantidad) {
-
-        // Comprueba si hay disponibilidad suficiente antes de modificar algún valor
-        if (entradasDisponibles >= cantidad) {
-            entradasDisponibles -= cantidad;
-            reservasConfirmadas += cantidad;
-            System.out.println("[" + this.nombre + "] Reserva con éxito: " + cantidad + " entrada(s).");
-        } else {
-            System.out.println("[" + this.nombre + "] No hay suficientes entradas.");
-        }
-
-        // Se ejecuta la comprobación de variantes luego de una transacción
-        verificarInventario(entradasDisponibles, reservasConfirmadas);
+        return null;
     }
 }

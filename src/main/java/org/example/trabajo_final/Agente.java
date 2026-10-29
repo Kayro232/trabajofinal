@@ -1,28 +1,22 @@
 package org.example.trabajo_final;
 
 import javafx.concurrent.Task;
-import javafx.application.Platform;
 
 public class Agente extends Task<Void> {
     private final String nombre;
-    private final EventoController controlador;
-    private final Runnable callbackActualizacion;
+    private final HelloController controlador;
 
-    public Agente(String nombre, EventoController controlador, Runnable callbackActualizacion) {
+    public Agente(String nombre, HelloController controlador) {
         this.nombre = nombre;
         this.controlador = controlador;
-        this.callbackActualizacion = callbackActualizacion;
     }
 
     @Override
     protected Void call() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            // Intento de reserva directamente en el controlador
-            controlador.intentarReservar(nombre);
+        for (int i = 1; i <= 10; i++) {
+            controlador.intentarReservar(nombre, i);
             
-            // Actualización segura en UI
-            Platform.runLater(callbackActualizacion);
-
+            // Pausa entre 50ms y 150ms para permitir alternancia de hilos
             Thread.sleep((long) (Math.random() * 100 + 50));
         }
         return null;

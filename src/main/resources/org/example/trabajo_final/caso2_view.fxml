@@ -11,7 +11,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.example.trabajo_final.PedidosController"
+      fx:controller="org.example.trabajo_final.CasoEs2.PedidosController"
       prefWidth="660.0"
       prefHeight="540.0"
       spacing="24.0"

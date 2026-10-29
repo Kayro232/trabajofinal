@@ -1,4 +1,4 @@
-package org.example.trabajo_final;
+package org.example.trabajo_final.CasoEs2;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

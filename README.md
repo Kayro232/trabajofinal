@@ -1,50 +1,48 @@
-Sistema Concurrente de Venta de Entradas — Caso 3 (JavaFX)
- Descripción del Proyecto
-Aplicación desarrollada en JavaFX que simula la gestión concurrente de ventas mediante vendedores (VendedorTask) que interactúan con un recurso compartido de gestión de inventario y caja (CajaVentas). Esta implementación sigue el patrón MVC estructurado bajo el paquete org.example.trabajo_final.CasoEs3.
- Requisitos del Sistema y Tecnologías
-Lenguaje: Java (JDK 17 o superior)
-Framework GUI: JavaFX 17 / 21
-Concurrencia: javafx.concurrent.Task, Platform.runLater y ExecutorService
-Gestor de Dependencias: Apache Maven
- Estructura del Proyecto (Caso 3)
-src/main/java/org/example/trabajo_final/CasoEs3/
-├── CajaVentas.java       # Recurso compartido / Modelo (Control de inventario y sección crítica)
-├── Caso3Controller.java  # Controlador FXML que gestiona la UI e hilo principal
-├── VendedorTask.java     # Tarea concurrente (hilos en segundo plano por vendedor)
-└── MainCaso3.java        # Punto de entrada para la aplicación del Caso 3
+# 💻 Documentación Técnica: Caso de Estudio 3
+## Caja de Ventas Concurrente con Control de Hilos
 
- Instrucciones de Ejecución
-Opción 1: Desde el IDE (IntelliJ IDEA / Eclipse / NetBeans)
-Clona el repositorio e importa la carpeta trabajofinal-caso3 como un proyecto Maven.
-Verifica que la versión asignada del SDK sea JDK 17 o superior.
-Ejecute la clase principal MainCaso3.java ubicada en: src/main/java/org/example/trabajo_final/CasoEs3/MainCaso3.java
-Opción 2: Desde la Terminal (Maven Wrapper)
-En la raíz de la carpeta del caso 3, ejecuta:
-# En Windows (CMD / PowerShell):
-.\mvnw.cmd clean javafx:run
+---
 
-# En Linux / macOS:
-./mvnw clean javafx:run
+### 1. Fundamentos Técnicos y Arquitectura
 
- Arquitectura y Sincronización
-1. Recurso Compartido (CajaVentas.java)
-Centraliza el número de entradas disponibles y procesa las peticiones mediante bloques/métodos sincronizados (synchronized). Esto asegura que la verificación y la deducción de inventario se realicen de manera atómica, impidiendo condiciones de carrera (race conditions).
-public synchronized boolean procesarVenta(String nombreVendedor) {
-    if (entradasDisponibles > 0) {
-        entradasDisponibles--;
-        ventasExitosas++;
-        return true;
-    } else {
-        ventasRechazadas++;
-        return false;
-    }
-}
-2. Hilos de Venta (VendedorTask.java)
-Cada vendedor se ejecuta de forma independiente en un hilo secundario implementando Task<Void>. Al completar o rechazar cada solicitud, delega la actualización de la interfaz gráfica al hilo principal de JavaFX usando Platform.runLater().
+#### 🔒 Sincronización de Recursos Compartidos
+> [!IMPORTANT]
+> Para garantizar la integridad y consistencia de los datos en un entorno concurrente con tres vendedores trabajando simultáneamente, se implementó una clase de modelo `CajaVentas` protegida mediante bloques y métodos con la palabra clave `synchronized`.
 
- Criterios de Aceptación y Verificación
-Al ejecutar las simulaciones desde la vista caso3_view.fxml:
-Invariante de Inventario: $$\text{Entradas Disponibles} + \text{Ventas Exitosas} = \text{Inventario Inicial}$$
-Sin bloqueos en la interfaz: La vista responde en todo momento durante el procesamiento en segundo plano.
-Control de concurrencia: Se deshabilita la opción de reanimar o duplicar ejecuciones simultáneas mientras una simulación está activa.
-Reinicio seguro: El botón de reinicio restablece las métricas en CajaVentas y actualiza los indicadores visibles en la UI.
+Cada vez que un hilo (`VendedorTask`) completa la transacción de un cliente, incrementa el contador de ventas y calcula la recaudación equivalente dentro de una misma sección crítica atómica:
+
+$$Recaudación = Ventas \times C\$100$$
+
+Esto evita condiciones de carrera (*Race Conditions*) y garantiza que en ningún momento una lectura concurrente muestre una inconsistencia entre el total de ventas y el dinero en caja.
+
+#### 🛑 Cancelación Cooperativa y Ciclo de Vida
+> [!NOTE]
+> La cancelación de las tareas se gestiona de forma cooperativa mediante la comprobación del método `isCancelled()` dentro del bucle de procesamiento de cada `VendedorTask`.
+
+Cuando el usuario presiona el botón **Cancelar**, la interfaz realiza el siguiente protocolo:
+1. Envía una señal de interrupción a los hilos a través de `task.cancel()`.
+2. Ejecuta un `executor.shutdownNow()` en un hilo de ejecución secundario.
+
+Este flujo evita bloquear el hilo de eventos de JavaFX (*JavaFX Application Thread*), asegura que ninguna venta a medio procesar quede registrada a medias y confirma la terminación efectiva de todos los trabajadores antes de habilitar el botón de **Reiniciar datos**.
+
+---
+
+### 2. Protocolo y Resultados de Pruebas de Aceptación
+
+| Escenario de Prueba | Resultado Esperado y Obtenido | Estado |
+| :--- | :--- | :---: |
+| **Escenario 1:** Ejecución Completa Exitosa | Las 3 tareas finalizaron correctamente alcanzando la meta de 15 ventas confirmadas y **C$ 1,500.00** de recaudación total. | `Éxito` |
+| **Escenario 2:** Cancelación Cooperativa | Las barras de progreso se detuvieron de inmediato. El total de ventas registradas coincidió exactamente con la recaudación ($Total = Ventas \times C\$100$), sin registros parciales. | `Éxito` |
+| **Escenario 3:** Control de Inicios Duplicados | El botón *Iniciar simulación* se deshabilita automáticamente al arrancar el proceso, impidiendo la creación de múltiples Pools de hilos concurrentes. | `Éxito` |
+| **Escenario 4:** Cancelación y Restablecimiento | Al presionar *Reiniciar datos*, los contadores volvieron a cero, las barras de progreso se restablecieron y se desvincularon las propiedades para una nueva ejecución limpia. | `Éxito` |
+| **Escenario 5:** Cierre Limpio de Ventana | Al cerrar la ventana mediante `setOnCloseRequest`, se ejecutó `executor.shutdownNow()`, finalizando el proceso en la JVM sin dejar hilos huérfanos. | `Éxito` |
+
+---
+
+### 🛠️ Especificaciones del Entorno
+
+* **Lenguaje y JDK:** ![Java](https://shields.io) 21
+* **Interfaz Gráfica:** ![JavaFX](https://shields.io) (Controls & FXML)
+* **Clase Principal:** `org.example.trabajo_final.CasoEs3.MainCaso3`
+* **Vista FXML:** `caso3_view.fxml`
+*
